@@ -1,0 +1,86 @@
+/*Export Data from MySQL*/
+
+/* Export `customers` table to CSV*/
+
+SELECT * FROM customers 
+INTO OUTFILE '/path/to/customers.csv' 
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"' 
+LINES TERMINATED BY '\n';
+
+
+/*Export `orders` table to CSV*/
+
+SELECT * FROM orders 
+INTO OUTFILE '/path/to/orders.csv' 
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"' 
+LINES TERMINATED BY '\n';
+
+
+/*Import Data into PostgreSQL*/
+
+/*Import data into the `customers` table*/
+
+customers(customer_id, customer_name) 
+FROM '/path/to/customers.csv' 
+DELIMITER ',' 
+CSV HEADER;
+
+-- Import data into the `orders` table
+
+orders(order_id, customer_id, order_date) 
+FROM '/path/to/orders.csv' 
+DELIMITER ',' 
+CSV HEADER;
+
+/*Validate Data Integrity*/
+
+/*MySQL*/
+
+SELECT COUNT(*) AS total_customers FROM customers;
+SELECT COUNT(*) AS total_orders FROM orders; 
+
+/*PostgreSQL*/
+
+SELECT COUNT(*) AS total_customers FROM customers;
+SELECT COUNT(*) AS total_orders FROM orders;
+
+/*Foreign Key Relationship Validation*/
+
+/*Verify all `customer_id` values in `orders` exist in `customers`*/
+
+SELECT o.customer_id 
+FROM orders o
+LEFT JOIN customers c ON o.customer_id = c.customer_id
+WHERE c.customer_id IS NULL;
+
+/*Python Script for Automation*/
+
+import pandas as pd
+from sqlalchemy import create_engine
+
+/*Connect to MySQL*/
+
+mysql_engine = create_engine("mysql+pymysql://user:password@localhost/mysql_db")
+
+/*Connect to PostgreSQL*/
+
+pg_engine = create_engine("postgresql://user:password@localhost/pg_db")
+
+/*Migrate `customers` table*/
+
+customers_df = pd.read_sql("SELECT * FROM customers", mysql_engine)
+customers_df.to_sql("customers", pg_engine, if_exists="append", index=False)
+
+/*Migrate `orders` table*/
+
+orders_df = pd.read_sql("SELECT * FROM orders", mysql_engine)
+orders_df.to_sql("orders", pg_engine, if_exists="append", index=False)
+
+print("Data migration completed!")
+
+
+
+
+
